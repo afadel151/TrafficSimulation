@@ -23,7 +23,8 @@
     "primevue": "^4.2.5",
     "vue": "latest",
     "vue-router": "latest",
-    "vue3-openlayers": "^11.3.0"
+    "vue3-openlayers": "^11.3.0",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@primevue/nuxt-module": "^4.2.5",

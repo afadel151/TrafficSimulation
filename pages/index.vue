@@ -51,7 +51,9 @@
                     <div class="flex flex-col sm:flex-row gap-4">
                         
                         <SignedIn>
-                            <Button severity="secondary" label="dashboard" />
+                            <NuxtLink href="/simulation">
+                                <Button  severity="secondary" label="Simulation" />
+                            </NuxtLink>
                         </SignedIn>
                     </div>
                 </div>

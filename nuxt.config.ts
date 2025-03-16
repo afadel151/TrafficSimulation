@@ -2,16 +2,17 @@
 import Aura from '@primevue/themes/aura';
 
 export default defineNuxtConfig({
-  compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
   modules: ['@primevue/nuxt-module','@clerk/nuxt' ],
+
   postcss: {
     plugins: {
       tailwindcss: {},
       autoprefixer: {},
     },
   },
+
   primevue: {
     options: {
       ripple: true,
@@ -25,5 +26,7 @@ export default defineNuxtConfig({
           }
       }
   }
-}
+},
+
+  compatibilityDate: '2025-03-16'
 })
