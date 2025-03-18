@@ -273,13 +273,13 @@ onMounted(() => {
   })
 })
 
-const openSumo = async  () => {
+const openSumo = async () => {
   try {
-        await axios.post('http://localhost:3001/run-osm-web-wizard');
-        emits('openSUMO');
-    } catch (error) {
-        console.error('Failed to run webwizard:', error);
-    }
+    await axios.post('http://localhost:3333/run-osm-web-wizard');
+    emits('openSUMO');
+  } catch (error) {
+    console.error('Failed to run webwizard:', error);
+  }
 }
 const features = () => {
   console.log('Features clicked')
@@ -296,6 +296,7 @@ const loadPassengerTrips = () => {
 const contact = () => {
   console.log('Contact clicked')
 }
+
 </script>
 
 <template>

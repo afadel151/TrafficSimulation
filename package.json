@@ -20,12 +20,12 @@
     "ol": "^10.4.0",
     "ol-contextmenu": "^5.5.0",
     "ol-ext": "^4.0.26",
+    "openlayers": "^4.6.5",
     "primeicons": "^7.0.0",
     "primevue": "^4.2.5",
     "vue": "latest",
     "vue-router": "latest",
     "vue3-openlayers": "^11.3.0",
-    "vuex": "^4.1.0",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {

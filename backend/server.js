@@ -14,12 +14,9 @@ const io = new Server(server, {
     origin: '*', // Allow all origins (update in production)
   },
 });
-process.env.SUMO_HOME = '/usr';
 app.post('/run-osm-web-wizard', (req, res) => {
-  const env = {
-    ...process.env,
-    };
-  const pythonProcess = spawn('python3', ['/home/fadel/Github/TrafficSimulation/app/public/sumo/tools/osmWebWizard.py'], { env });
+ 
+  const pythonProcess = spawn('python', ['C:\\Users\\FADEL\\Documents\\GitHub\\TrafficSimulation\\public\\sumo\\tools\\osmWebWizard.py']);
 
   pythonProcess.stdout.on('data', (data) => {
     console.log(`stdout: ${data}`);
@@ -35,8 +32,7 @@ app.post('/run-osm-web-wizard', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
-process.env.SUMO_HOME = '/usr';
+const PORT = process.env.PORT || 3333;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`SUMO_HOME is set to: ${process.env.SUMO_HOME}`);

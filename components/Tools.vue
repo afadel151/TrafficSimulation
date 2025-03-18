@@ -1,8 +1,8 @@
 <script setup>
 import Menubar from 'primevue/menubar';
+import OpenLayers from 'openlayers';
 import { ref } from "vue";
 const emits = defineEmits(['openSUMO', 'features', 'loadNetworkData', 'loadPolyData', 'loadPassengerTrips', 'contact']);
-
 const handleOpenSUMO = () => {
     emits('openSUMO');
 };
@@ -59,12 +59,52 @@ const items = ref([
         ]
     },
     {
-        label: 'Contact',
+        label: 'Build',
         icon: 'pi pi-envelope' ,
-        command: handleContact 
+        command: startBuild 
     }
 ]);
 
+function startBuild() {
+  var map = new OpenLayers.Map("map");
+  var cor = map.getExtent();
+  cor.transform(
+    map.getProjectionObject(), // from Spherical Mercator Projection
+    new OpenLayers.Projection("EPSG:4326")
+  );
+
+  var data = {
+    poly: elem("#polygons").checked,
+    duration: parseInt(elem("#duration").value),
+    publicTransport: elem("#publicTransport").checked,
+    leftHand: elem("#leftHand").checked,
+    decal: elem("#decal").checked,
+    carOnlyNetwork: elem("#carOnlyNetwork").checked,
+    vehicles: {}
+  };
+
+  // calculates the coordinates of the rectangle if area-picking is active
+  if (canvasActive) {
+    var width = cor.right - cor.left;
+    var height = cor.bottom - cor.top;
+    data.coords = [
+      cor.left + width * canvasRect[0],
+      cor.top + height * canvasRect[3],
+      cor.left + width * canvasRect[2],
+      cor.top + height * canvasRect[1]
+    ];
+  } else
+    data.coords = [cor.left, cor.bottom, cor.right, cor.top];
+
+  vehicleClasses.forEach(function (vehicleClass) {
+    var result = vehicleClass.toJSON();
+    if (result)
+      data.vehicles[vehicleClass.internal] = result;
+  });
+  console.log(data);
+  
+
+}
 </script>
 
 
