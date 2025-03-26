@@ -1,8 +1,10 @@
 <script setup>
 import Menubar from 'primevue/menubar';
 import OpenLayers from 'openlayers';
+import { createClient } from '@supabase/supabase-js'
+const supabase = createClient('https://rpwnfrlgbvebtitmlfqa.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwd25mcmxnYnZlYnRpdG1sZnFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5MDU5NjIsImV4cCI6MjA1ODQ4MTk2Mn0.uuuxAfJ4wr8f31YU3F_kozvn92CMlk4lJG13a2L7-rY')
 import { ref } from "vue";
-const emits = defineEmits(['openSUMO', 'features', 'loadNetworkData', 'loadPolyData', 'loadPassengerTrips', 'contact']);
+const emits = defineEmits(['openSUMO', 'features', 'loadNetworkdata', 'loadPolyData', 'loadPassengerTrips', 'contact']);
 const handleOpenSUMO = () => {
     emits('openSUMO');
 };
@@ -22,7 +24,12 @@ const handleLoadPolyData = () => {
 const handleLoadPassengerTrips = () => {
     emits('loadPassengerTrips');
 };
-
+const simulations = ref([]);
+const fetchSimulations = async () => 
+{
+    const { data } = await supabase.from('simulations').select()
+    simulations.value = data;
+}
 const handleContact = () => {
     emits('contact');
 };
@@ -31,11 +38,11 @@ const items = ref([
         label: 'Open SUMO',
         icon: 'pi pi-map',
         command: handleOpenSUMO
-
     },
     {
-        label: 'Features',
-        icon: 'pi pi-star'
+        label: 'Simulations',
+        icon: 'pi pi-star',
+        items: []
     },
     {
         label: 'Load',
@@ -60,10 +67,34 @@ const items = ref([
     },
     {
         label: 'Build',
-        icon: 'pi pi-envelope' ,
-        command: startBuild 
+        icon: 'pi pi-envelope',
+        command: startBuild
     }
 ]);
+const convertNetwork = async (path) => {
+    const response = await fetch('http://localhost:3333/convert-network', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            path: path
+        })
+    });
+    const data = await response.json();
+    console.log(data.message);
+    emits('loadNetworkdata', path);
+}
+watch(simulations, (newSimulations) => {
+    const simulationItems = newSimulations.map(simulation => ({
+        label: simulation.path,
+        icon: 'pi pi-star',
+        command: () => {
+            convertNetwork(simulation.path);
+        }
+    }));
+    items.value.find(item => item.label === 'Simulations').items = simulationItems;
+});
 
 function startBuild() {
   var map = new OpenLayers.Map("map");
@@ -105,10 +136,14 @@ function startBuild() {
   
 
 }
+onMounted(()=>{
+    fetchSimulations();
+})
 </script>
 
 
 <template>
+    
     <div class="card w-screen flex justify-center items-center mt-5">
         <Menubar :model="items" />
     </div>

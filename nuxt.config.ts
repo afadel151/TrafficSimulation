@@ -5,7 +5,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-03-18',
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
-  modules: ['@primevue/nuxt-module','@clerk/nuxt' ],
+  modules: [
+    '@primevue/nuxt-module',
+    '@clerk/nuxt',
+    // 'nuxt-mongoose'
+  ],
   postcss: {
     plugins: {
       tailwindcss: {},
@@ -17,13 +21,19 @@ export default defineNuxtConfig({
       ripple: true,
       inputVariant: 'filled',
       theme: {
-          preset: Aura,
-          options: {
-              prefix: 'p',
-              darkModeSelector: 'system',
-              cssLayer: false
-          }
+        preset: Aura,
+        options: {
+          prefix: 'p',
+          darkModeSelector: 'system',
+          cssLayer: false
+        }
       }
-  }
-}
+    }
+  },
+  // mongoose: {
+  //   uri: process.env.MONGODB_URI,
+  //   options: {},
+  //   modelsDir: 'models',
+  //   devtools: true,
+  // }
 })

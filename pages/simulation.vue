@@ -1,5 +1,5 @@
 <script setupt>
-import Tools from '~/components/Tools.vue';
+import { ClientOnly } from '#components';
 
 
 </script>
