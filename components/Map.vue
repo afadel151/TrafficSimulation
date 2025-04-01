@@ -23,7 +23,6 @@ const parseXml = async (xmlText) => {
 const convertNetToGeoJSON = (xmlData) => {
   const features = []
 
-  // Convert edges to GeoJSON features
   xmlData['net']['edge'].forEach(edge => {
     if (edge['lane'] && edge['lane'][0]['$']['shape']) {
       features.push({
@@ -40,7 +39,6 @@ const convertNetToGeoJSON = (xmlData) => {
     }
   })
 
-  // Convert junctions to GeoJSON features
   xmlData['net']['junction'].forEach(junction => {
     if (junction['$']['x'] && junction['$']['y']) {
       features.push({
