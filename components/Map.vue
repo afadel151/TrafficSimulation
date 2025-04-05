@@ -1,175 +1,60 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Map, View } from 'ol'
+import { Feature, Map, View } from 'ol'
 import TileLayer from 'ol/layer/Tile'
 import OSM from 'ol/source/OSM'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { GeoJSON } from 'ol/format'
-import { Style, Fill, Stroke } from 'ol/style'
-import xml2js from 'xml2js'
-
+import { Style, Fill, Stroke, Icon } from 'ol/style'
+import Tools from '~/components/Tools.vue';
+import axios from 'axios'
+import { Point } from 'ol/geom'
+import Draw from 'ol/interaction/Draw'
+import { Vector } from 'ol/source'
 const center = ref([4, 35])
 const projection = ref('EPSG:4326')
+
 const zoom = ref(8)
 const rotation = ref(0)
 const map = ref(null)
+let draw;
+let save;
+let dibujo;
+let coordinates = [];
+let old_coordinates = [];
 
-const parseXml = async (xmlText) => {
-  const parser = new xml2js.Parser()
-  const result = await parser.parseStringPromise(xmlText)
-  return result
-}
-const convertNetToGeoJSON = (xmlData) => {
-  const features = []
 
-  xmlData['net']['edge'].forEach(edge => {
-    if (edge['lane'] && edge['lane'][0]['$']['shape']) {
-      features.push({
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates: edge['lane'][0]['$']['shape'].split(' ').map(coord => coord.split(',').map(Number))
-        },
-        properties: {
-          id: edge['$']['id'],
-          type: edge['$']['type'] || 'unknown'
-        }
-      })
-    }
+const loadGeoJSONData = async (path) => {
+  console.log(path);
+
+  const response = await fetch(`${path}.osm.net.geojson`)
+  console.log(response);
+
+  const geojsonData = await response.json()
+
+  const vectorSource = new VectorSource({
+    features: new GeoJSON().readFeatures(geojsonData, {
+      featureProjection: projection.value
+    })
   })
 
-  xmlData['net']['junction'].forEach(junction => {
-    if (junction['$']['x'] && junction['$']['y']) {
-      features.push({
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [parseFloat(junction['$']['x']), parseFloat(junction['$']['y'])]
-        },
-        properties: {
-          id: junction['$']['id'],
-          type: 'junction'
-        }
-      })
-    }
-  })
-
-  xmlData['net']['roundabout'].forEach(roundabout => {
-    if (roundabout['$']['id']) {
-      features.push({
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [parseFloat(roundabout['$']['x']), parseFloat(roundabout['$']['y'])]
-        },
-        properties: {
-          id: roundabout['$']['id'],
-          type: 'roundabout'
-        }
-      })
-    }
-  })
-
-
-  return {
-    type: 'FeatureCollection',
-    features: features
-  }
-}
-const convertTripsToGeoJSON = (xmlData) => {
-  const features = xmlData['routes']['trip'].map(trip => {
-    return {
-      type: 'Feature',
-      geometry: {
-        type: 'Point',
-        coordinates: [parseFloat(trip['$']['from']), parseFloat(trip['$']['to'])]
-      },
-      properties: {
-        id: trip['$']['id'],
-        type: trip['$']['type'],
-        depart: trip['$']['depart'],
-        departLane: trip['$']['departLane']
-      }
-    }
-  })
-  return {
-    type: 'FeatureCollection',
-    features: features
-  }
-}
-const addLayersToMap = (netData, tripsData, polyData) => {
-  console.log('Net Data:', netData)
-  // console.log('Trips Data:', tripsData)
-  // console.log('Poly Data:', polyData)
-  const netGeoJSON = convertNetToGeoJSON(netData)
-  const tripsGeoJSON = convertTripsToGeoJSON(tripsData)
-  // const polyGeoJSON = convertToGeoJSON(polyData)
-  const roadSource = new VectorSource({
-    features: new GeoJSON().readFeatures(netGeoJSON)
-  })
-  const roadLayer = new VectorLayer({
-    source: roadSource,
+  const vectorLayer = new VectorLayer({
+    source: vectorSource,
     style: new Style({
       stroke: new Stroke({
         color: '#000',
         width: 2
-      })
-    })
-  })
-  console.log(roadLayer);
-  
-  const vehicleSource = new VectorSource({
-    features: new GeoJSON().readFeatures(tripsGeoJSON)
-  })
-  const vehicleLayer = new VectorLayer({
-    source: vehicleSource,
-    style: new Style({
-      fill: new Fill({
-        color: '#f00'
       }),
-      stroke: new Stroke({
-        color: '#f00',
-        width: 1
+      fill: new Fill({
+        color: 'rgba(0, 0, 0, 0.1)'
       })
     })
   })
+  console.log(vectorLayer);
 
-  // const polySource = new VectorSource({
-  //   features: new GeoJSON().readFeatures(polyGeoJSON)
-  // })
-  // const polyLayer = new VectorLayer({
-  //   source: polySource,
-  //   style: new Style({
-  //     fill: new Fill({
-  //       color: '#0f0'
-  //     }),
-  //     stroke: new Stroke({
-  //       color: '#0f0',
-  //       width: 1
-  //     })
-  //   })
-  // })
-
-  map.value.addLayer(roadLayer)
-  map.value.addLayer(vehicleLayer)
-  // map.value.addLayer(polyLayer)
+  map.value.addLayer(vectorLayer)
 }
-const loadSimulationData = async () => {
-  const netResponse = await fetch('/veins_results/osm.net.xml')
-  const netText = await netResponse.text()
-  const tripsResponse = await fetch('/veins_results/osm.passenger.trips.xml')
-  const tripsText = await tripsResponse.text()
-  const polyResponse = await fetch('/veins_results/osm.poly.xml')
-  const polyText = await polyResponse.text()
-
-  const netData = await parseXml(netText)
-  const tripsData = await parseXml(tripsText)
-  const polyData = await parseXml(polyText)
-
-  addLayersToMap(netData, tripsData, polyData)
-}
-
 onMounted(() => {
   map.value = new Map({
     target: 'map',
@@ -184,14 +69,41 @@ onMounted(() => {
       zoom: zoom.value,
       rotation: rotation.value
     })
-  })
-
-  loadSimulationData()
+  });
+  map.value.on("click", function (evt) {
+    console.log(evt.coordinate);
+    let marker = new Feature({
+      geometry: new Point(evt.coordinate),
+    });
+    marker.setStyle(new Style({
+      image: new Icon(({
+        src: new URL('../assets/imgs/rsu.png', import.meta.url).href,
+        width:100,
+        height:100
+      }))
+    }));
+    let vectorSource = new Vector({ features: [marker] })
+    var markerVectorLayer = new VectorLayer({
+      source: vectorSource,
+    });
+    map.value.addLayer(markerVectorLayer);
+  });
 })
+
+const openSumo = async () => {
+  try {
+    await axios.post('http://localhost:3333/run-osm-web-wizard');
+    emits('openSUMO');
+  } catch (error) {
+    console.error('Failed to run webwizard:', error);
+  }
+}
 </script>
 
 <template>
-  <div id="map" style="height:100vh"></div>
+  <div id="map" style="height:100vh" class="relative">
+    <Tools class="absolute  z-10" @openSUMO="openSumo" @loadNetworkdata="loadGeoJSONData" />
+  </div>
 </template>
 
 <style scoped>

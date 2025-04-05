@@ -9,11 +9,7 @@ app.use(cors());
 app.use(express.json()); // To parse JSON bodies
 
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: '*', // Allow all origins (update in production)
-  },
-});
+
 app.post('/run-osm-web-wizard', (req, res) => {
  
   const pythonProcess = spawn('python', ['C:\\sumo\\tools\\osmWebWizard.py']);
@@ -53,6 +49,7 @@ app.post('/convert-network', (req, res) => {
     });
   });
 });
+
 const PORT = process.env.PORT || 3333;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

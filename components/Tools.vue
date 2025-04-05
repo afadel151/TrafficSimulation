@@ -95,12 +95,11 @@ watch(simulations, (newSimulations) => {
     }));
     items.value.find(item => item.label === 'Simulations').items = simulationItems;
 });
-
 function startBuild() {
   var map = new OpenLayers.Map("map");
   var cor = map.getExtent();
   cor.transform(
-    map.getProjectionObject(), // from Spherical Mercator Projection
+    map.getProjectionObject(),
     new OpenLayers.Projection("EPSG:4326")
   );
 
@@ -113,8 +112,6 @@ function startBuild() {
     carOnlyNetwork: elem("#carOnlyNetwork").checked,
     vehicles: {}
   };
-
-  // calculates the coordinates of the rectangle if area-picking is active
   if (canvasActive) {
     var width = cor.right - cor.left;
     var height = cor.bottom - cor.top;
@@ -126,15 +123,12 @@ function startBuild() {
     ];
   } else
     data.coords = [cor.left, cor.bottom, cor.right, cor.top];
-
   vehicleClasses.forEach(function (vehicleClass) {
     var result = vehicleClass.toJSON();
     if (result)
       data.vehicles[vehicleClass.internal] = result;
   });
   console.log(data);
-  
-
 }
 onMounted(()=>{
     fetchSimulations();

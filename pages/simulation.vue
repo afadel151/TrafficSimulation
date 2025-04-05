@@ -6,7 +6,7 @@ import { ClientOnly } from '#components';
 
 <template>
     <ClientOnly>
-            <Map2 />
+            <Map />
   </ClientOnly>
 </template>
 
